@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import app from "./app.js"
-import connectDB from "./db.js"
+import connectDB from "./db/index.js"
 
 dotenv.config(
     {
@@ -9,7 +9,7 @@ dotenv.config(
 
 const PORT = process.env.PORT || 8000;
 
-connectDB
+connectDB()
     .then(()=>
         {
             app.listen(PORT , ()=>
@@ -17,7 +17,7 @@ connectDB
                     console.log(`🚀 Server is running at http://localhost:${PORT}`)
                 })
         })
-        .catch((err)=>
+    .catch((err)=>
             {
                 console.error("❌ Database connection failed, server startup aborted!", err);
             })
