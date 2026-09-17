@@ -10,17 +10,26 @@ const connectDB =()=>
     {
         return new  Promise((resolve , reject)=>
             {
-                const db = new sqlite3.Database(dbPath ,  (err)=>
+                const db = new sqlite3.Database(dbPath ,  async(err)=>
                     {
                         if(err)
                             {
                                 console.error("❌ SQLite connection failed:", err.message)
                                 reject(err)
                             }
-                        else{
-                            console.log(`\n⚙️ SQLite connected successfully! File: ${dbPath}`)
-                            resolve(db)
-                        }
+                      try {
+  console.log(`\n⚙️ SQLite connected successfully! File: ${dbPath}`);
+  
+  // Initialize tables
+  await initSchema(db);
+
+  // Resolve connection
+  resolve(db);
+} catch (schemaErr) {
+  // Handle schema initialization error
+  reject(schemaErr);
+}
+
                     })
             })
     }
