@@ -1,1 +1,27 @@
-const schema = ` CREATE TABLE IF NOT EXISTS users ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT CHECK(role IN ('ATTENDEE', 'ORGANIZER', 'ADMIN')) DEFAULT 'ATTENDEE', refresh_token TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP ); CREATE TABLE IF NOT EXISTS events ( id INTEGER PRIMARY KEY AUTOINCREMENT, organizer_id INTEGER NOT NULL, title TEXT NOT NULL, description TEXT, venue TEXT NOT NULL, start_time DATETIME NOT NULL, status TEXT CHECK(status IN ('DRAFT', 'PUBLISHED', 'CANCELLED')) DEFAULT 'DRAFT', created_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (organizer_id) REFERENCES users(id) ON DELETE CASCADE ); CREATE TABLE IF NOT EXISTS ticket_tiers ( id INTEGER PRIMARY KEY AUTOINCREMENT, event_id INTEGER NOT NULL, tier_name TEXT NOT NULL, -- e.g., 'VIP', 'General Admission', 'Early Bird' price REAL NOT NULL CHECK(price &gt;= 0), total_seats INTEGER NOT NULL CHECK(total_seats &gt; 0), available_seats INTEGER NOT NULL, FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE ); CREATE TABLE IF NOT EXISTS bookings ( id INTEGER PRIMARY KEY AUTOINCREMENT, attendee_id INTEGER NOT NULL, tier_id INTEGER NOT NULL, quantity INTEGER NOT NULL CHECK(quantity &gt; 0), total_price REAL NOT NULL, booking_status TEXT CHECK(booking_status IN ('PENDING_LOCK', 'PAID', 'CANCELLED', 'EXPIRED')) DEFAULT 'PENDING_LOCK', seat_lock_expires_at DATETIME, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (attendee_id) REFERENCES users(id), FOREIGN KEY (tier_id) REFERENCES ticket_tiers(id) ); CREATE TABLE IF NOT EXISTS checkins ( id INTEGER PRIMARY KEY AUTOINCREMENT, booking_id INTEGER UNIQUE NOT NULL, qr_code_hash TEXT UNIQUE NOT NULL, verified_by_organizer_id INTEGER NOT NULL, checked_in_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (booking_id) REFERENCES bookings(id), FOREIGN KEY (verified_by_organizer_id) REFERENCES users(id) ); `; export const initSchema = (db) =&gt; { return new Promise((resolve, reject) =&gt; { // Enable foreign key constraints in SQLite db.run("PRAGMA foreign\_keys = ON;", (err) =&gt; { if (err) return reject(err); db.exec(schema, (execErr) =&gt; { if (execErr) { console.error("❌ Failed to initialize database schema:", execErr.message); return reject(execErr); } console.log("📑 Database schema & tables initialized successfully!"); resolve(); }); }); }); };
+### YOUR PRACTICE TASK: ✍️
+
+Now you will assemble `src/db/index.js` and `src/index.js`.
+
+#### Requirements:
+
+1. **`src/db/index.js`**:
+
+    - Combine the `sqlite3` connection setup with your clean `schema` definition and `initSchema` function we built earlier.
+    - Export a main `connectDB` function that:
+        1. Connects to SQLite (`DB_NAME`).
+        2. Runs `PRAGMA foreign_keys = ON;`.
+        3. Runs `initSchema(db)` to ensure all 5 tables (`users`, `events`, `ticket_tiers`, `bookings`, `checkins`) exist.
+        4. Resolves with the `db` instance if everything succeeds.
+    - Export a helper function `getDB()` so model files can access the database connection.
+2. **`src/index.js`**:
+
+    - Load `dotenv` variables (`dotenv.config({ path: "./.env" })`).
+    - Import `app` from `./app.js`.
+    - Import `connectDB` from `./db/index.js`.
+    - Call `connectDB()`.
+    - On `.then()`, start listening with `app.listen(process.env.PORT || 8000, ...)` and log the server URL.
+    - On `.catch()`, log the error and stop execution.
+
+**Paste your code for both `src/db/index.js` and `src/index.js` below.**
+
+Once verified, test running `npm run dev` or `node src/index.js` to see your database initialize and server start! Then we dive into **Step 4: User Authentication & JWT Token Engine**! 🚀

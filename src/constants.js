@@ -1,1 +1,1 @@
-export const DB_NAME = "eventpulse.sqlite";
+export const DB_NAME = "eventpulse.db";
