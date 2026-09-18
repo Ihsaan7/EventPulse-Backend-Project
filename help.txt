@@ -1,39 +1,25 @@
-import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import jwt from "jsonwebtoken";
-import { getDB } from "../db/index.js";
-import { findUserById } from "../models/user.model.js";
 
 /**
- * @description Middleware to verify JWT and attach user to request
+ * @description Middleware to verify if the user has the required role(s)
+ * @param {Array<string>} roles - Array of allowed roles (e.g., ['ADMIN', 'ORGANIZER'])
  */
-export const verifyJWT = asyncHandler(async (req, res, next) => {
-    // 1. Extract token from cookies or Authorization header (Bearer token)
-    const token = 
-        req.cookies?.accessToken || 
-        req.header("Authorization")?.replace("Bearer ", "");
+export const verifyRole = (...roles) => {
+    return (req, res, next) => {
+        // 1. Check if user exists on the request (attached by verifyJWT)
+        if (!req.user) {
+            throw new ApiError(401, "Unauthorized: User not found");
+        }
 
-    if (!token) {
-        throw new ApiError(401, "Unauthorized request");
-    }
+        // 2. Check if the user's role is included in the allowed roles
+        if (!roles.includes(req.user.role)) {
+            throw new ApiError(
+                403, 
+                "Forbidden: You do not have permission to access this resource"
+            );
+        }
 
-    // 2. Verify the token
-    let decodedToken;
-    try {
-        decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    } catch (error) {
-        throw new ApiError(401, "Invalid or expired Access Token");
-    }
-
-    // 3. Find the user in the database
-    const db = getDB();
-    const user = await findUserById(db, decodedToken._id);
-
-    if (!user) {
-        throw new ApiError(401, "Invalid Access Token: User not found");
-    }
-
-    // 4. Attach user to request and move to next middleware/controller
-    req.user = user;
-    next();
-});
+        // 3. If role matches, proceed to the controller
+        next();
+    };
+};
