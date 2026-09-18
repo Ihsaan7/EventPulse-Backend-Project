@@ -1,4 +1,4 @@
-const AsyncHandler = (reqestedHandler)=>
+const asyncHandler = (reqestedHandler)=>
     {
         return (req , res , next)=>
             {
@@ -7,4 +7,4 @@ const AsyncHandler = (reqestedHandler)=>
             }
     }
 
-export {AsyncHandler}
+export { asyncHandler }

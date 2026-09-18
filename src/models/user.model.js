@@ -1,4 +1,4 @@
-import { getDB } from "../db.js";
+import { getDB } from "../db/index.js";
 
 export const findUserByEmail = async(email)=>
     {
@@ -43,7 +43,7 @@ export const createUser = async({ name , email , passwordHash , role = "ATTENDEE
             {
                 const sql =`
                     INSERT INTO users (name , email , password_hash , role)
-                        VALUES (? ,? ,? ,? ,?)
+                        VALUES (? ,? ,? ,?)
                 `
                 const params =[name , email , passwordHash , role]
                 db.run(sql , params , function(err)
