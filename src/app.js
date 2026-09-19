@@ -3,6 +3,7 @@ import cors from "cors"
 import cookieParser from "cookie-parser"
 import userRouter from "./routes/user.routes.js"
 import { errorHandler } from "./middleware/error.middleware.js"
+import eventRouter from "./routes/event.routes.js"
 
 
 const app = express();
@@ -36,8 +37,10 @@ app.get("/health", (req , res)=>
 
 // ========== ROUTES ========================
 app.use("/api/v1/users" , userRouter)
-// ========== ROUTES ========================
 
+
+app.use("/api/v1/events", eventRouter)
+// ========== ROUTES ========================
 
 
 // ========== GLOBAL ERROR HANDLER =========
